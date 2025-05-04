@@ -119,45 +119,46 @@ export async function listObjects(prefix = "") {
 
 // ---------- Simple Tests (Run with: node spacesManager.js) ---------- //
 
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  (async () => {
+      try {
 
-(async () => {
-    try {
+          // upload file
+          await uploadFile("test/upload/hello.txt", "test/uploadFile/", true);
+          await listObjects("test/uploadFile/")
+          
+          // upload folder
+          await uploadFolder("test/upload/", "test/uploadfolder/", true);
+          await listObjects("test/uploadfolder/")
+          
+          // move folder
+          // await uploadFolder("test/upload/", "test/movefolder/", true);
+          // await moveObject("test/movefolder/", "test/movefolder/move", true)
+          
+          // delete file
+          await uploadFile("test/upload/hello.txt", "test/removeFile/", true);
+          await listObjects("test/removeFile/")
+          await removeObject("test/removeFile/", true);
+          await listObjects("test/removeFile/")
+          
+          // delete folder
+          await uploadFolder("test/upload/", "test/removeFolder/", false);
+          await listObjects("test/removeFolder/")
+          await removeObject("test/removeFolder/", false);
+          await listObjects("test/removeFolder/")
 
-        // upload file
-        await uploadFile("test/upload/hello.txt", "test/uploadFile/", true);
-        await listObjects("test/uploadFile/")
-        
-        // upload folder
-        await uploadFolder("test/upload/", "test/uploadfolder/", true);
-        await listObjects("test/uploadfolder/")
-        
-        // move folder
-        // await uploadFolder("test/upload/", "test/movefolder/", true);
-        // await moveObject("test/movefolder/", "test/movefolder/move", true)
-        
-        // delete file
-        await uploadFile("test/upload/hello.txt", "test/removeFile/", true);
-        await listObjects("test/removeFile/")
-        await removeObject("test/removeFile/", true);
-        await listObjects("test/removeFile/")
-        
-        // delete folder
-        await uploadFolder("test/upload/", "test/removeFolder/", false);
-        await listObjects("test/removeFolder/")
-        await removeObject("test/removeFolder/", false);
-        await listObjects("test/removeFolder/")
-
-        //cleanup
-        await removeObject("test/uploadFile/", false);
-        await removeObject("test/uploadfolder/", false);
-        await removeObject("test/movefolder/", false);
+          //cleanup
+          await removeObject("test/uploadFile/", false);
+          await removeObject("test/uploadfolder/", false);
+          await removeObject("test/movefolder/", false);
 
 
 
-    } catch (err) {
-      console.error("❌ Test failed:", err);
-    }
-})();
+      } catch (err) {
+        console.error("❌ Test failed:", err);
+      }
+  })();
+}
 
 
 /*
