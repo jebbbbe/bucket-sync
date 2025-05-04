@@ -2,6 +2,10 @@
   "name": "digital-ocean-sync",
   "version": "1.0.0",
   "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.802.0",
     "@aws-sdk/lib-storage": "^3.802.0",
