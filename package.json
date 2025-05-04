@@ -1,5 +1,5 @@
 {
-  "name": "digital-ocean-snyc",
+  "name": "digital-ocean-sync",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
