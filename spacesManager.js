@@ -7,6 +7,7 @@ import {
     PutObjectCommand,
     DeleteObjectCommand,
     CopyObjectCommand,
+    HeadObjectCommand,
 } from "@aws-sdk/client-s3"
 import dotenv from "dotenv"
 import fs from "fs/promises"
@@ -29,35 +30,57 @@ const bucket = process.env.DO_SPACE_BUCKET
 // ---------- Core Functions ---------- //
 
 export async function uploadFile({
-    localPath: localPath = undefined,
-    remotePath: remotePath = undefined,
-    isPublic: isPublic = false,
-    verbose: verbose = false,
+    localPath = undefined,
+    remotePath = undefined,
+    isPublic = false,
+    verbose = false,
+    override = true,
 }) {
-    // if( path.extname(localPath) !== "" &&  !remotePath.endsWith('/') ){
-    //     throw new Error("remotePath is not a folder")
-    // }
     const stream = createReadStream(localPath)
     const fileName = path.basename(localPath)
+    const isDir = remotePath.endsWith("/")
+    const fullRemotePath = isDir ? remotePath + fileName : remotePath
+
+    if (!override) {
+        try {
+            await s3.send(
+                new HeadObjectCommand({
+                    Bucket: bucket,
+                    Key: fullRemotePath,
+                })
+            )
+            // File exists
+            if (verbose) {
+                console.log(`⏭️  Skipped (exists): ${fullRemotePath}`)
+            }
+            return
+        } catch (err) {
+            if (err.name !== "NotFound") {
+                throw err // real error
+            }
+            // else: file doesn't exist → proceed
+        }
+    }
 
     const command = new PutObjectCommand({
         Bucket: bucket,
-        Key: remotePath.endsWith("/") ? remotePath + fileName : remotePath,
+        Key: fullRemotePath,
         Body: stream,
         ACL: isPublic ? "public-read" : undefined,
     })
 
     await s3.send(command)
     if (verbose) {
-        console.log(`✅ Uploaded file to ${remotePath}`)
+        console.log(`✅ Uploaded file to ${fullRemotePath}`)
     }
 }
 
 export async function uploadFolder({
     localPath: localFolder = undefined,
     remotePath: remoteFolder = undefined,
-    isPublic: isPublic = false,
-    verbose: verbose = false,
+    isPublic = false,
+    verbose = false,
+    override = true,
 }) {
     const entries = await fs.readdir(localFolder, { withFileTypes: true })
 
@@ -71,6 +94,7 @@ export async function uploadFolder({
                 remotePath: remotePath,
                 isPublic: isPublic,
                 verbose: verbose,
+                override: override,
             })
         } else {
             await uploadFile({
@@ -78,10 +102,12 @@ export async function uploadFolder({
                 remotePath: remotePath,
                 isPublic: isPublic,
                 verbose: verbose,
+                override: override,
             })
         }
     }
-    if (verbose) {
+
+    if (verbose && override == true) { // override logs even if folder already exits...
         console.log(`✅ Uploaded folder ${localFolder} to ${remoteFolder}`)
     }
 }
@@ -133,7 +159,7 @@ export async function removeObject({
         )
 
         if (verbose) {
-            console.log(`🗑️ Deleted ${item.Key}`)
+            console.log(`🗑️  Deleted ${item.Key}`)
         }
     }
 }
@@ -163,6 +189,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ;(async () => {
         try {
             // upload file
+            console.log("")
+            console.log("upload file")
             await uploadFile({
                 localPath: "test/upload/hello.txt",
                 remotePath: "test/uploadFile/",
@@ -172,6 +200,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             await listObjects({ prefix: "test/uploadFile/" })
 
             // upload folder
+            console.log("")
+            console.log("upload folder")
             await uploadFolder({
                 localPath: "test/upload/",
                 remotePath: "test/uploadfolder/",
@@ -181,10 +211,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             await listObjects({ prefix: "test/uploadfolder/" })
 
             // move folder
+            // console.log("")
+            // console.log("move folder")
             // await uploadFolder("test/upload/", "test/movefolder/", true);
             // await moveObject("test/movefolder/", "test/movefolder/move", true)
 
             // delete file
+            console.log("")
+            console.log("delete file")
             await uploadFile({
                 localPath: "test/upload/hello.txt",
                 remotePath: "test/removeFile/",
@@ -196,6 +230,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             await listObjects({ prefix: "test/removeFile/" })
 
             // delete folder
+            console.log("")
+            console.log("delete folder")
             await uploadFolder({
                 localPath: "test/upload/",
                 remotePath: "test/removeFolder/",
@@ -203,19 +239,36 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
                 verbose: false,
             })
             await listObjects({ prefix: "test/removeFolder/" })
+
             await removeObject({
                 pathKey: "test/removeFolder/",
                 verbose: false,
             })
             await listObjects({ prefix: "test/removeFolder/" })
 
-            //cleanup
-            await removeObject({ pathKey: "test/uploadFile/", verbose: false })
-            await removeObject({
-                pathKey: "test/uploadfolder/",
+            // override Folder
+            console.log("")
+            console.log("override Folder")
+            await uploadFolder({
+                localPath: "test/upload/",
+                remotePath: "test/overrideFolder/",
+                isPublic: false,
                 verbose: false,
+                override: true,
             })
-            await removeObject({ pathKey: "test/movefolder/", verbose: false })
+            //override, false
+            await uploadFolder({
+                localPath: "test/upload/",
+                remotePath: "test/overrideFolder/",
+                isPublic: false,
+                verbose: true,
+                override: false,
+            })
+
+            //cleanup
+			console.log("")
+            console.log("cleanup")
+            await removeObject({ pathKey: "test/", verbose: true })
         } catch (err) {
             console.error("❌ Test failed:", err)
         }
