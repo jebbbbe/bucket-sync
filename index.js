@@ -1,5 +1,8 @@
-export { uploadFile } from "./spacesManager.js"
-export { uploadFolder } from "./spacesManager.js"
-export { moveObject } from "./spacesManager.js"
-export { removeObject } from "./spacesManager.js"
-export { listObjects } from "./spacesManager.js"
+export {
+    uploadFile,
+    uploadFolder,
+    moveObject,
+    moveObject,
+    removeObject,
+    listObjects,
+} from "./src/main.js"

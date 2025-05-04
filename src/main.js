@@ -1,5 +1,3 @@
-// spacesManager.js
-
 import {
     S3Client,
     ListObjectsV2Command,
@@ -13,7 +11,6 @@ import dotenv from "dotenv"
 import fs from "fs/promises"
 import path from "path"
 import { createReadStream, statSync } from "fs"
-import { fileURLToPath } from "url"
 
 dotenv.config()
 const s3 = new S3Client({
@@ -107,7 +104,8 @@ export async function uploadFolder({
         }
     }
 
-    if (verbose && override == true) { // override logs even if folder already exits...
+    if (verbose && override == true) {
+        // override logs even if folder already exits...
         console.log(`✅ Uploaded folder ${localFolder} to ${remoteFolder}`)
     }
 }
@@ -179,143 +177,3 @@ export async function listObjects({ prefix: prefix = "" }) {
     console.log("📄 Files:", files)
     return { folders, files }
 }
-
-// ---------- Simple Tests (Run with: node spacesManager.js) ---------- //
-// localPath: localPath = undefined,
-// remotePath: remotePath = undefined,
-// isPublic: isPublic = false,
-// verbose: verbose = false,
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    ;(async () => {
-        try {
-            // upload file
-            console.log("")
-            console.log("upload file")
-            await uploadFile({
-                localPath: "test/upload/hello.txt",
-                remotePath: "test/uploadFile/",
-                isPublic: false,
-                verbose: true,
-            })
-            await listObjects({ prefix: "test/uploadFile/" })
-
-            // upload folder
-            console.log("")
-            console.log("upload folder")
-            await uploadFolder({
-                localPath: "test/upload/",
-                remotePath: "test/uploadfolder/",
-                isPublic: false,
-                verbose: true,
-            })
-            await listObjects({ prefix: "test/uploadfolder/" })
-
-            // move folder
-            // console.log("")
-            // console.log("move folder")
-            // await uploadFolder("test/upload/", "test/movefolder/", true);
-            // await moveObject("test/movefolder/", "test/movefolder/move", true)
-
-            // delete file
-            console.log("")
-            console.log("delete file")
-            await uploadFile({
-                localPath: "test/upload/hello.txt",
-                remotePath: "test/removeFile/",
-                isPublic: false,
-                verbose: true,
-            })
-            await listObjects({ prefix: "test/removeFile/" })
-            await removeObject({ pathKey: "test/removeFile/", verbose: true })
-            await listObjects({ prefix: "test/removeFile/" })
-
-            // delete folder
-            console.log("")
-            console.log("delete folder")
-            await uploadFolder({
-                localPath: "test/upload/",
-                remotePath: "test/removeFolder/",
-                isPublic: false,
-                verbose: false,
-            })
-            await listObjects({ prefix: "test/removeFolder/" })
-
-            await removeObject({
-                pathKey: "test/removeFolder/",
-                verbose: false,
-            })
-            await listObjects({ prefix: "test/removeFolder/" })
-
-            // override Folder
-            console.log("")
-            console.log("override Folder")
-            await uploadFolder({
-                localPath: "test/upload/",
-                remotePath: "test/overrideFolder/",
-                isPublic: false,
-                verbose: false,
-                override: true,
-            })
-            //override, false
-            await uploadFolder({
-                localPath: "test/upload/",
-                remotePath: "test/overrideFolder/",
-                isPublic: false,
-                verbose: true,
-                override: false,
-            })
-
-            //cleanup
-			console.log("")
-            console.log("cleanup")
-            await removeObject({ pathKey: "test/", verbose: true })
-        } catch (err) {
-            console.error("❌ Test failed:", err)
-        }
-    })()
-}
-
-/*
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  (async () => {
-    try {
-      const testFolder = "test/hello.txt";
-      const testFile = "test-local/hello.txt";
-      const remoteFolder = "test-remote/";
-      const movedPath = "test-remote-moved/hello.txt";
-
-      // Prepare a test file
-    //   await fs.mkdir(testFolder, { recursive: true });
-    //   await fs.writeFile(testFile, "Hello, Spaces!");
-
-      // Upload file
-      await uploadFile(testFile, remoteFolder);
-
-      // Upload folder
-      await uploadFolder(testFolder, "test-folder-upload/");
-
-      // List contents
-      await listObjects("test-folder-upload/");
-
-      // Move file
-      await moveObject(remoteFolder + "hello.txt", movedPath);
-
-      // Remove folder
-      await removeObject("test-folder-upload/");
-
-      // Clean up moved file
-      await removeObject(movedPath);
-      await removeObject(remoteFolder);
-    } catch (err) {
-      console.error("❌ Test failed:", err);
-    }
-  })();
-}
-*/
-
-// {
-//   localPath:undefined,
-//   remotePath:undefined,
-//   isPublic:false,
-//   verbose:false,
-// }
