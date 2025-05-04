@@ -1,5 +1,5 @@
 {
-  "name": "aws-scripts",
+  "name": "digital-ocean-snyc",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
