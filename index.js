@@ -1,0 +1,5 @@
+export { uploadFile } from "./spacesManager"
+export { uploadFolder } from "./spacesManager"
+export { moveObject } from "./spacesManager"
+export { removeObject } from "./spacesManager"
+export { listObjects } from "./spacesManager"
