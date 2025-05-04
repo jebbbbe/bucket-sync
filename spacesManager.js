@@ -28,12 +28,12 @@ const bucket = process.env.DO_SPACE_BUCKET
 
 // ---------- Core Functions ---------- //
 
-export async function uploadFolder(
-    localFolder,
-    remoteFolder,
-    isPublic = false,
-    verbose = false
-) {
+export async function uploadFile({
+    localPath: localPath = undefined,
+    remotePath: remotePath = undefined,
+    isPublic: isPublic = false,
+    verbose: verbose = false,
+}) {
     // if( path.extname(localPath) !== "" &&  !remotePath.endsWith('/') ){
     //     throw new Error("remotePath is not a folder")
     // }
@@ -53,12 +53,12 @@ export async function uploadFolder(
     }
 }
 
-export async function uploadFolder(
-    localFolder,
-    remoteFolder,
-    isPublic = false,
-    verbose = false
-) {
+export async function uploadFolder({
+    localPath: localFolder = undefined,
+    remotePath: remoteFolder = undefined,
+    isPublic: isPublic = false,
+    verbose: verbose = false,
+}) {
     const entries = await fs.readdir(localFolder, { withFileTypes: true })
 
     for (const entry of entries) {
@@ -66,9 +66,19 @@ export async function uploadFolder(
         const remotePath = path.posix.join(remoteFolder, entry.name)
 
         if (entry.isDirectory()) {
-            await uploadFolder(fullPath, remotePath, isPublic, verbose)
+            await uploadFolder({
+                localPath: fullPath,
+                remotePath: remotePath,
+                isPublic: isPublic,
+                verbose: verbose,
+            })
         } else {
-            await uploadFile(fullPath, remotePath, isPublic, verbose)
+            await uploadFile({
+                localPath: fullPath,
+                remotePath: remotePath,
+                isPublic: isPublic,
+                verbose: verbose,
+            })
         }
     }
     if (verbose) {
@@ -76,7 +86,11 @@ export async function uploadFolder(
     }
 }
 
-export async function moveObject(sourcePath, destinationPath, verbose = false) {
+export async function moveObject({
+    sourcePath: sourcePath = undefined,
+    destinationPath: destinationPath = undefined,
+    verbose: verbose = false,
+}) {
     const copyCommand = new CopyObjectCommand({
         Bucket: bucket,
         CopySource: `/${bucket}/${sourcePath}`,
@@ -95,7 +109,10 @@ export async function moveObject(sourcePath, destinationPath, verbose = false) {
     }
 }
 
-export async function removeObject(pathKey, verbose = false) {
+export async function removeObject({
+    pathKey: pathKey,
+    verbose: verbose = false,
+}) {
     const listCommand = new ListObjectsV2Command({
         Bucket: bucket,
         Prefix: pathKey,
@@ -121,7 +138,7 @@ export async function removeObject(pathKey, verbose = false) {
     }
 }
 
-export async function listObjects(prefix = "") {
+export async function listObjects({ prefix: prefix = "" }) {
     const command = new ListObjectsV2Command({
         Bucket: bucket,
         Prefix: prefix,
@@ -138,58 +155,67 @@ export async function listObjects(prefix = "") {
 }
 
 // ---------- Simple Tests (Run with: node spacesManager.js) ---------- //
-
+// localPath: localPath = undefined,
+// remotePath: remotePath = undefined,
+// isPublic: isPublic = false,
+// verbose: verbose = false,
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ;(async () => {
         try {
             // upload file
-            await uploadFile(
-                "test/upload/hello.txt",
-                "test/uploadFile/",
-                false,
-                true
-            )
-            await listObjects("test/uploadFile/")
+            await uploadFile({
+                localPath: "test/upload/hello.txt",
+                remotePath: "test/uploadFile/",
+                isPublic: false,
+                verbose: true,
+            })
+            await listObjects({ prefix: "test/uploadFile/" })
 
             // upload folder
-            await uploadFolder(
-                "test/upload/",
-                "test/uploadfolder/",
-                false,
-                true
-            )
-            await listObjects("test/uploadfolder/")
+            await uploadFolder({
+                localPath: "test/upload/",
+                remotePath: "test/uploadfolder/",
+                isPublic: false,
+                verbose: true,
+            })
+            await listObjects({ prefix: "test/uploadfolder/" })
 
             // move folder
             // await uploadFolder("test/upload/", "test/movefolder/", true);
             // await moveObject("test/movefolder/", "test/movefolder/move", true)
 
             // delete file
-            await uploadFile(
-                "test/upload/hello.txt",
-                "test/removeFile/",
-                false,
-                true
-            )
-            await listObjects("test/removeFile/")
-            await removeObject("test/removeFile/", true)
-            await listObjects("test/removeFile/")
+            await uploadFile({
+                localPath: "test/upload/hello.txt",
+                remotePath: "test/removeFile/",
+                isPublic: false,
+                verbose: true,
+            })
+            await listObjects({ prefix: "test/removeFile/" })
+            await removeObject({ pathKey: "test/removeFile/", verbose: true })
+            await listObjects({ prefix: "test/removeFile/" })
 
             // delete folder
-            await uploadFolder(
-                "test/upload/",
-                "test/removeFolder/",
-                false,
-                false
-            )
-            await listObjects("test/removeFolder/")
-            await removeObject("test/removeFolder/", false)
-            await listObjects("test/removeFolder/")
+            await uploadFolder({
+                localPath: "test/upload/",
+                remotePath: "test/removeFolder/",
+                isPublic: false,
+                verbose: false,
+            })
+            await listObjects({ prefix: "test/removeFolder/" })
+            await removeObject({
+                pathKey: "test/removeFolder/",
+                verbose: false,
+            })
+            await listObjects({ prefix: "test/removeFolder/" })
 
             //cleanup
-            await removeObject("test/uploadFile/", false)
-            await removeObject("test/uploadfolder/", false)
-            await removeObject("test/movefolder/", false)
+            await removeObject({ pathKey: "test/uploadFile/", verbose: false })
+            await removeObject({
+                pathKey: "test/uploadfolder/",
+                verbose: false,
+            })
+            await removeObject({ pathKey: "test/movefolder/", verbose: false })
         } catch (err) {
             console.error("❌ Test failed:", err)
         }
