@@ -11,6 +11,7 @@ import dotenv from "dotenv"
 import fs from "fs/promises"
 import path from "path"
 import { createReadStream, statSync } from "fs"
+import mime from "mime";
 
 dotenv.config()
 const s3 = new S3Client({
@@ -59,11 +60,14 @@ export async function uploadFile({
         }
     }
 
+    const mimeType = mime.getType(localPath) || "application/octet-stream";
+
     const command = new PutObjectCommand({
         Bucket: bucket,
         Key: fullRemotePath,
         Body: stream,
         ACL: isPublic ? "public-read" : undefined,
+        ContentType: mimeType,
     })
 
     await s3.send(command)
