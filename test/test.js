@@ -3,34 +3,46 @@ import {
     uploadFolder,
     moveObject,
     removeObject,
-    listObjects,
+    listObject,
+    downloadObjects,
 } from "../src/main.js"
 import { fileURLToPath } from "url"
+import dotenv from "dotenv"
+
+dotenv.config()
+if (!process.env.remoteTestPath) {
+    throw new Error("Missing remoteTestPath in environment variables.");
+}
+
+const remoteTestPath = process.env.remoteTestPath
+console.log(remoteTestPath)
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    ;(async () => {
+    (async () => {
         try {
             // upload file
             console.log("")
             console.log("upload file")
             await uploadFile({
                 localPath: "test/upload/hello.txt",
-                remotePath: "test/uploadFile/",
+                remotePath: remoteTestPath + "uploadFile/",
                 isPublic: false,
                 verbose: true,
             })
-            await listObjects({ prefix: "test/uploadFile/" })
+            await listObject({ remotePath: remoteTestPath + "uploadFile/", verbose: true, })
+
 
             // upload folder
             console.log("")
             console.log("upload folder")
             await uploadFolder({
                 localPath: "test/upload/",
-                remotePath: "test/uploadfolder/",
+                remotePath: remoteTestPath + "uploadfolder/",
                 isPublic: false,
                 verbose: true,
             })
-            await listObjects({ prefix: "test/uploadfolder/" })
+            await listObject({ remotePath: remoteTestPath + "uploadfolder/", verbose: true, })
+
 
             // move folder
             // console.log("")
@@ -43,37 +55,39 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             console.log("delete file")
             await uploadFile({
                 localPath: "test/upload/hello.txt",
-                remotePath: "test/removeFile/",
+                remotePath: remoteTestPath + "removeFile/",
                 isPublic: false,
                 verbose: true,
             })
-            await listObjects({ prefix: "test/removeFile/" })
-            await removeObject({ pathKey: "test/removeFile/", verbose: true })
-            await listObjects({ prefix: "test/removeFile/" })
+            await listObject({ remotePath: remoteTestPath + "removeFile/", verbose: true, })
+            await removeObject({ remotePath: remoteTestPath + "removeFile/", verbose: true })
+            await listObject({ remotePath: remoteTestPath + "removeFile/", verbose: true, })
 
             // delete folder
             console.log("")
             console.log("delete folder")
             await uploadFolder({
                 localPath: "test/upload/",
-                remotePath: "test/removeFolder/",
+                remotePath: remoteTestPath + "removeFolder/",
                 isPublic: false,
                 verbose: false,
             })
-            await listObjects({ prefix: "test/removeFolder/" })
+            await listObject({ remotePath: remoteTestPath + "removeFolder/", verbose: true, })
+
 
             await removeObject({
-                pathKey: "test/removeFolder/",
+                remotePath: remoteTestPath + "removeFolder/",
                 verbose: false,
             })
-            await listObjects({ prefix: "test/removeFolder/" })
+            await listObject({ remotePath: remoteTestPath + "removeFolder/", verbose: true, })
+
 
             // override Folder
             console.log("")
             console.log("override Folder")
             await uploadFolder({
                 localPath: "test/upload/",
-                remotePath: "test/overrideFolder/",
+                remotePath: remoteTestPath + "overrideFolder/",
                 isPublic: false,
                 verbose: false,
                 override: true,
@@ -81,16 +95,23 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
             //override, false
             await uploadFolder({
                 localPath: "test/upload/",
-                remotePath: "test/overrideFolder/",
+                remotePath: remoteTestPath + "overrideFolder/",
                 isPublic: false,
                 verbose: true,
                 override: false,
             })
 
+            await listObject({ remotePath: remoteTestPath + "uploadfolder/", verbose: true, })
+            await downloadObjects({
+                localPath: "test/download/",
+                remotePath: remoteTestPath + "uploadfolder/",
+                verbose: true,
+            })
+
             //cleanup
             console.log("")
             console.log("cleanup")
-            await removeObject({ pathKey: "test/", verbose: true })
+            await removeObject({ remotePath: remoteTestPath, verbose: true })
         } catch (err) {
             console.error("❌ Test failed:", err)
         }
