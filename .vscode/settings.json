@@ -1,0 +1,16 @@
+// .vscode/settings.json
+{
+    // global fallback
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+    // make sure JS/TS/JSON files definitely use Prettier
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}

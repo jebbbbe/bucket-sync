@@ -11,5 +11,12 @@
     "@aws-sdk/lib-storage": "^3.802.0",
     "dotenv": "^16.5.0",
     "mime": "^4.0.7"
+  },
+  "jest": {
+    "transform": {},
+    "testEnvironment": "node"
+  },
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest main.test.js --detectOpenHandles"
   }
 }

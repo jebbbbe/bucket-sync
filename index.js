@@ -1,7 +1,9 @@
 export {
     uploadFile,
     uploadFolder,
-    moveObject,
+    listObject,
     removeObject,
-    listObjects,
+    moveObject,
+    copyObject,
+    downloadObject,
 } from "./src/main.js"
