@@ -1,5 +1,5 @@
 {
-  "name": "digital-ocean-sync",
+  "name": "bucket-sync",
   "version": "1.0.1",
   "type": "module",
   "main": "index.js",
