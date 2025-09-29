@@ -11,7 +11,7 @@ import path from "path"
 import { createReadStream, statSync, createWriteStream } from "fs"
 import { pipeline } from "stream/promises"
 import mime from "mime"
-import { s3, bucket } from "./client.js"
+import { getClient } from "./client.js"
 
 // ---------- Util Functions ---------- //
 
@@ -37,6 +37,7 @@ export async function uploadFile({
     verbose = false,
     override = true,
 }) {
+    const { s3, bucket } = getClient()
     const stream = createReadStream(localPath)
     const fileName = path.basename(localPath)
     const isDir = remotePath.endsWith("/")
@@ -86,6 +87,7 @@ export async function uploadFolder({
     verbose = false,
     override = true,
 }) {
+    const { s3, bucket } = getClient()
     const entries = await fs.readdir(localFolder, { withFileTypes: true })
 
     for (const entry of entries) {
@@ -122,6 +124,7 @@ export async function listObject({
     verbose = false,
     recursive = false,
 }) {
+    const { s3, bucket } = getClient()
     // build base command parameters
     const params = {
         Bucket: bucket,
@@ -167,6 +170,7 @@ export async function removeObject({
     verbose: verbose = false,
     recursive: recursive = false,
 }) {
+    const { s3, bucket } = getClient()
     // 1) discover which keys to delete
     const files = await listObject({
         remotePath: prefix,
@@ -197,6 +201,7 @@ export async function moveObject({
     verbose: verbose = false,
     recursive: recursive = false,
 }) {
+    const { s3, bucket } = getClient()
     const files = await listObject({
         remotePath: source,
         verbose: false,
@@ -255,6 +260,7 @@ export async function copyObject({
     verbose: verbose = false,
     recursive: recursive = false,
 }) {
+    const { s3, bucket } = getClient()
     const files = await listObject({
         remotePath: source,
         verbose: false,
@@ -305,6 +311,7 @@ export async function downloadObject({
     verbose = false,
     recursive = false,
 }) {
+    const { s3, bucket } = getClient()
     if (!remotePath) throw new Error("`remotePath` is required")
 
     // If this is a “folder” prefix or recursive flag, do a batch download
@@ -398,6 +405,7 @@ export async function editObject({
     metadata = undefined,
     verbose = false,
 }) {
+    const { s3, bucket } = getClient()
     // 1) If only ACL is changing, use the lighter ACL call
     if (acl && !contentType && !cacheControl && ttl == null && !metadata) {
         await s3.send(
@@ -437,6 +445,7 @@ export async function editObjects({
     metadata = undefined,
     verbose = false,
 }) {
+    const { s3, bucket } = getClient()
     let ContinuationToken
     do {
         const resp = await s3.send(

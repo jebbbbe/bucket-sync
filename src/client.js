@@ -1,60 +1,62 @@
 import dotenv from "dotenv"
 import { S3Client } from "@aws-sdk/client-s3"
+dotenv.config()
 
-const envKeys = {
+let envKeys = {
     ENDPOINT: "ENDPOINT",
     KEY: "KEY",
     SECRET: "SECRET",
     BUCKET: "BUCKET",
 }
 
-dotenv.config()
-verifyEnvKeys()
+let cache = {
+    initialized: false,
+    s3: null,
+    bucket: null,
+}
 
-export let bucket = process.env[envKeys.BUCKET]
-export let s3 = new S3Client({
-    endpoint: `https://${process.env[envKeys.ENDPOINT]}`,
-    region: "us-east-1",
-    credentials: {
-        accessKeyId: process.env[envKeys.KEY],
-        secretAccessKey: process.env[envKeys.SECRET],
-    },
-})
+function resolveConfig() {
+    const endpoint = process.env[envKeys.ENDPOINT]
+    const key = process.env[envKeys.KEY]
+    const secret = process.env[envKeys.SECRET]
+    const bucket = process.env[envKeys.BUCKET]
 
-export function setCredentials({ ENDPOINT, KEY, SECRET }) {
-    envKeys.ENDPOINT = ENDPOINT
-    envKeys.KEY = KEY
-    envKeys.SECRET = SECRET
-}
-export function setBucket(_bucket) {
-    envKeys.BUCKET = _bucket
-    bucket = process.env[envKeys.BUCKET]
-}
-export function setBucketFromString(_bucket) {
-    bucket = _bucket
-}
-export function setS3() {
-    s3 = new S3Client({
-        endpoint: `https://${process.env[envKeys.ENDPOINT]}`,
+    if (!endpoint || !key || !secret || !bucket) {
+        throw new Error(
+            `Missing required env. Got endpoint=${!!endpoint}, key=${!!key}, secret=${!!secret}, bucket=${!!bucket}. ` +
+            `Expected env var names: ENDPOINT=${envKeys.ENDPOINT}, KEY=${envKeys.KEY}, SECRET=${envKeys.SECRET}, BUCKET=${envKeys.BUCKET}`
+        )
+    }
+
+    const s3 = new S3Client({
+        endpoint: `https://${endpoint}`,
         region: "us-east-1",
-        credentials: {
-            accessKeyId: process.env[envKeys.KEY],
-            secretAccessKey: process.env[envKeys.SECRET],
-        },
+        credentials: { accessKeyId: key, secretAccessKey: secret },
+        forcePathStyle: true, // optional, depends on your endpoint
     })
+
+    cache = { initialized: true, s3, bucket }
 }
 
-function verifyEnvKeys() {
-    if (!process.env[envKeys.ENDPOINT]) {
-        throw new Error("Missing ENDPOINT in environment variables.")
-    }
-    if (!process.env[envKeys.KEY]) {
-        throw new Error("Missing KEY in environment variables.")
-    }
-    if (!process.env[envKeys.SECRET]) {
-        throw new Error("Missing SECRET in environment variables.")
-    }
-    if (!process.env[envKeys.BUCKET]) {
-        throw new Error("Missing BUCKET in environment variables.")
-    }
+function ensureInit() {
+    if (!cache.initialized) resolveConfig()
+}
+
+export function setUpEnv(overrides = {}) {
+    envKeys = { ...envKeys, ...overrides }
+    cache = { initialized: false, s3: null, bucket: null }
+    ensureInit()
+}
+
+export function getS3() {
+    ensureInit()
+    return cache.s3
+}
+export function getBucket() {
+    ensureInit()
+    return cache.bucket
+}
+export function getClient() {
+    ensureInit()
+    return { s3: cache.s3, bucket: cache.bucket }
 }

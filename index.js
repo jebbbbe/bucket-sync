@@ -1,3 +1,4 @@
+export { setUpEnv } from "./src/client.js"
 export {
     uploadFile,
     uploadFolder,
