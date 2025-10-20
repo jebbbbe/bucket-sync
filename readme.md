@@ -14,10 +14,8 @@ Compatible with **DigitalOcean Spaces**
 
 ---
 ## Todo
-Edit/read object properties (ACL, cache, MIME)
-
-More tests
-
-TypeScript support via JSDoc
-
-CLI wrapper
+- [ ] Edit/read object properties (ACL, cache, MIME)
+- [ ] More tests
+- [ ] TypeScript support via JSDoc
+- [ ] CLI wrapper
+- [ ] p-limit
