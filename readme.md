@@ -18,4 +18,4 @@ Compatible with **DigitalOcean Spaces**
 - [ ] More tests
 - [ ] TypeScript support via JSDoc
 - [ ] CLI wrapper
-- [ ] p-limit
+- [x] p-limit

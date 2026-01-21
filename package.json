@@ -10,13 +10,17 @@
     "@aws-sdk/client-s3": "^3.802.0",
     "@aws-sdk/lib-storage": "^3.802.0",
     "dotenv": "^16.5.0",
-    "mime": "^4.0.7"
+    "mime": "^4.0.7",
+    "p-limit": "^7.2.0"
   },
   "jest": {
     "transform": {},
     "testEnvironment": "node"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest main.test.js --detectOpenHandles"
+  "test": "NODE_OPTIONS=--experimental-vm-modules jest main.test.js --detectOpenHandles"
+},
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

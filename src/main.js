@@ -12,8 +12,10 @@ import { createReadStream, statSync, createWriteStream } from "fs"
 import { pipeline } from "stream/promises"
 import mime from "mime"
 import { getClient } from "./client.js"
+import { limit } from "./limit.js"
 
 // ---------- Util Functions ---------- //
+const wrapLimit = (fn) => (...args) => limit(() => fn(...args))
 
 function getMimeType(localPath) {
     return (
@@ -28,9 +30,20 @@ function getMimeType(localPath) {
     }
 }
 
+// ---------- exports ---------- //
+export const uploadFile = wrapLimit(_uploadFile)
+export const uploadFolder = wrapLimit(_uploadFolder)
+export const listObject = wrapLimit(_listObject)
+export const removeObject = wrapLimit(_removeObject)
+export const moveObject = wrapLimit(_moveObject)
+export const copyObject = wrapLimit(_copyObject)
+export const downloadObject = wrapLimit(_downloadObject)
+export const editObject = wrapLimit(_editObject)
+export const editObjects = wrapLimit(_editObjects)
+
 // ---------- Core Functions ---------- //
 
-export async function uploadFile({
+async function _uploadFile({
     localPath = undefined,
     remotePath = undefined,
     isPublic = false,
@@ -80,7 +93,7 @@ export async function uploadFile({
     }
 }
 
-export async function uploadFolder({
+async function _uploadFolder({
     localPath: localFolder = undefined,
     remotePath: remoteFolder = undefined,
     isPublic = false,
@@ -119,7 +132,7 @@ export async function uploadFolder({
     }
 }
 
-export async function listObject({
+async function _listObject({
     remotePath: remotePrefix = "",
     verbose = false,
     recursive = false,
@@ -165,7 +178,7 @@ export async function listObject({
     return files
 }
 
-export async function removeObject({
+async function _removeObject({
     remotePath: prefix = "",
     verbose: verbose = false,
     recursive: recursive = false,
@@ -195,7 +208,7 @@ export async function removeObject({
     }
 }
 
-export async function moveObject({
+async function _moveObject({
     remotePath: source = "",
     targetPath: target = "",
     verbose: verbose = false,
@@ -254,7 +267,7 @@ export async function moveObject({
         )
 }
 
-export async function copyObject({
+async function _copyObject({
     remotePath: source = "",
     targetPath: target = "",
     verbose: verbose = false,
@@ -304,7 +317,7 @@ export async function copyObject({
         )
 }
 
-export async function downloadObject({
+async function _downloadObject({
     remotePath = undefined,
     localPath = undefined,
     overwrite = false,
@@ -396,7 +409,7 @@ export async function downloadObject({
  * Metadata, etc. Uses PutObjectAclCommand if only ACL changes, otherwise
  * does a self‐copy with MetadataDirective:"REPLACE".
  */
-export async function editObject({
+async function _editObject({
     key = undefined,
     acl = undefined,
     contentType = undefined,
@@ -436,7 +449,7 @@ export async function editObject({
     if (verbose) console.log(`🔄 Replaced headers/metadata on ${key}`)
 }
 
-export async function editObjects({
+async function _editObjects({
     prefix = undefined,
     acl = undefined,
     contentType = undefined,
