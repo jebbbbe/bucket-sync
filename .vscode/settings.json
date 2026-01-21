@@ -1,8 +1,14 @@
-// .vscode/settings.json
 {
-    // global fallback
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    // live server
+    "liveServer.settings.root": "/build",
+    "liveServer.settings.port": 5501,
+    
+    // Indentation settings
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
 
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     // make sure JS/TS/JSON files definitely use Prettier
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

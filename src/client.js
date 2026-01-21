@@ -24,7 +24,7 @@ function resolveConfig() {
     if (!endpoint || !key || !secret || !bucket) {
         throw new Error(
             `Missing required env. Got endpoint=${!!endpoint}, key=${!!key}, secret=${!!secret}, bucket=${!!bucket}. ` +
-            `Expected env var names: ENDPOINT=${envKeys.ENDPOINT}, KEY=${envKeys.KEY}, SECRET=${envKeys.SECRET}, BUCKET=${envKeys.BUCKET}`
+                `Expected env var names: ENDPOINT=${envKeys.ENDPOINT}, KEY=${envKeys.KEY}, SECRET=${envKeys.SECRET}, BUCKET=${envKeys.BUCKET}`
         )
     }
 

@@ -15,6 +15,7 @@ import { getClient } from "./client.js"
 import { limit } from "./limit.js"
 
 // ---------- Util Functions ---------- //
+// prettier-ignore
 const wrapLimit = (fn) => (...args) => limit(() => fn(...args))
 
 function getMimeType(localPath) {
