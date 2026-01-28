@@ -314,7 +314,7 @@ async function _copyObject({
 
     if (verbose)
         console.log(
-            `✅ Moved ${keys.length} object(s) from ${source} to ${target}`
+            `✅ Moved ${files.length} object(s) from ${source} to ${target}`
         )
 }
 
